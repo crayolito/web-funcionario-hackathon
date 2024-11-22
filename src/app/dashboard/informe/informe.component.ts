@@ -97,83 +97,51 @@ export default class InformeComponent {
       this.map!.on('load', () => resolve());
     });
 
+    // Marcador principal
     this.addMarker(alerta, 'assets/denuncia-mismo-official.png', [
       alerta.longitude,
       alerta.latitude,
     ]);
 
-    alerta.children?.forEach((child) => {
-      this.addMarker(child, 'assets/denuncia-otros-official.png', [
-        child.longitude,
-        child.latitude,
-      ]);
-    });
-
     if (alerta.children?.length) {
       for (const child of alerta.children) {
+        // Marcador hijo (primer nivel)
+        this.addMarker(child, 'assets/denuncia-otros-official.png', [
+          child.longitude,
+          child.latitude,
+        ]);
+
         try {
           const encodedPolyline = await this.informeService.getRoute(
             { latitude: alerta.latitude, longitude: alerta.longitude },
             { latitude: child.latitude, longitude: child.longitude }
           );
 
-          const coordinates = this.decodePolyline(encodedPolyline);
-          const routeId = `route-${child.id}`;
+          await this.drawRoute(encodedPolyline, `route-${child.id}`, '#2563eb');
 
-          if (this.map!.getSource(routeId)) {
-            this.map!.removeLayer(routeId);
-            this.map!.removeSource(routeId);
-          }
-
-          this.map!.addSource(routeId, {
-            type: 'geojson',
-            data: {
-              type: 'Feature',
-              properties: {},
-              geometry: {
-                type: 'LineString',
-                coordinates: coordinates,
-              },
-            },
-          });
-
-          this.map!.addLayer({
-            id: routeId,
-            type: 'line',
-            source: routeId,
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round',
-              visibility: 'visible',
-            },
-            paint: {
-              'line-color': '#2563eb',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 12, 3, 16, 6],
-              'line-opacity': 0.8,
-              'line-dasharray': [0.5, 1],
-              'line-blur': 1,
-            },
-          });
-
-          const animate = () => {
-            const start = Date.now();
-
-            const animateLine = () => {
-              const phase = ((Date.now() - start) % 1000) / 1000;
-
-              this.map!.setPaintProperty(routeId, 'line-dasharray', [
-                0.5,
-                1,
-                phase * 4,
+          if (child.children?.length) {
+            for (const grandChild of child.children) {
+              // Marcador nieto con nueva imagen
+              this.addMarker(grandChild, 'assets/reporteComunitario.png', [
+                grandChild.longitude,
+                grandChild.latitude,
               ]);
 
-              requestAnimationFrame(animateLine);
-            };
+              const grandChildPolyline = await this.informeService.getRoute(
+                { latitude: child.latitude, longitude: child.longitude },
+                {
+                  latitude: grandChild.latitude,
+                  longitude: grandChild.longitude,
+                }
+              );
 
-            requestAnimationFrame(animateLine);
-          };
-
-          animate();
+              await this.drawRoute(
+                grandChildPolyline,
+                `route-${grandChild.id}`,
+                '#10b981'
+              );
+            }
+          }
         } catch (error) {
           console.error('Error dibujando ruta:', error);
         }
@@ -182,10 +150,78 @@ export default class InformeComponent {
 
     const bounds = new mapboxgl.LngLatBounds();
     bounds.extend([alerta.longitude, alerta.latitude]);
+
     alerta.children?.forEach((child) => {
       bounds.extend([child.longitude, child.latitude]);
+      child.children?.forEach((grandChild) => {
+        bounds.extend([grandChild.longitude, grandChild.latitude]);
+      });
     });
+
     this.map!.fitBounds(bounds, { padding: 50 });
+  }
+
+  private async drawRoute(
+    encodedPolyline: string,
+    routeId: string,
+    color: string
+  ) {
+    const coordinates = this.decodePolyline(encodedPolyline);
+
+    if (this.map!.getSource(routeId)) {
+      this.map!.removeLayer(routeId);
+      this.map!.removeSource(routeId);
+    }
+
+    this.map!.addSource(routeId, {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: coordinates,
+        },
+      },
+    });
+
+    this.map!.addLayer({
+      id: routeId,
+      type: 'line',
+      source: routeId,
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round',
+        visibility: 'visible',
+      },
+      paint: {
+        'line-color': color,
+        'line-width': ['interpolate', ['linear'], ['zoom'], 12, 3, 16, 6],
+        'line-opacity': 0.8,
+        'line-dasharray': [0.5, 1],
+        'line-blur': 1,
+      },
+    });
+
+    const animate = () => {
+      const start = Date.now();
+
+      const animateLine = () => {
+        const phase = ((Date.now() - start) % 1000) / 1000;
+
+        this.map!.setPaintProperty(routeId, 'line-dasharray', [
+          0.5,
+          1,
+          phase * 4,
+        ]);
+
+        requestAnimationFrame(animateLine);
+      };
+
+      requestAnimationFrame(animateLine);
+    };
+
+    animate();
   }
 
   private addMarker(
