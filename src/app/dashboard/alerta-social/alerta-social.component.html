@@ -1,0 +1,250 @@
+<form
+  method="post"
+  class="w-[100%] h-[100%] flex flex-row"
+  [formGroup]="alertaSocialForm"
+  autocomplete="off"
+>
+  <section
+    class="h-full w-[55%] flex-col flex items-center justify-between gap-[5%]"
+  >
+    <div
+      class="w-full h-[55%] border-2 border-custom-secondary border-custom-secondary/20 rounded-md py-[1%] px-[1.5%] gap-[2%] flex flex-col justify-between"
+    >
+      <p
+        class="font-maven-pro font-bold text-xl text-custom-secondary"
+        style="text-shadow: 1px 1px 4px #008005"
+      >
+        ALERTAS SOCIALES
+      </p>
+      <section class="h-[20%] w-full flex flex-row gap-[1.5%]">
+        <div
+          class="bg-custom-secondary h-[100%] w-[48%] flex flex-row rounded-sm px-2 shadow-custom-option-dashboar"
+        >
+          <input
+            formControlName="title"
+            placeholder="Título de la Alerta"
+            type="text"
+            class="border-none outline-none bg-transparent font-maven-pro text-custom-primary text-base w-[95%] h-[100%]"
+          />
+        </div>
+        <div
+          class="bg-custom-secondary h-[100%] w-[48%] flex flex-row rounded-sm px-2 shadow-custom-option-dashboar"
+        >
+          <input
+            formControlName="description"
+            placeholder="Descripción"
+            type="text"
+            class="border-none outline-none bg-transparent font-maven-pro text-custom-primary text-base w-[95%] h-[100%]"
+          />
+        </div>
+      </section>
+      <section class="h-[20%] w-full flex flex-row gap-[1.5%]">
+        <div
+          class="bg-custom-secondary h-[100%] w-[48%] flex flex-row rounded-sm px-2 shadow-custom-option-dashboar"
+        >
+          <input
+            formControlName="parent_id"
+            placeholder="ID Alerta Padre (opcional)"
+            type="text"
+            class="border-none outline-none bg-transparent font-maven-pro text-custom-primary text-base w-[95%] h-[100%]"
+          />
+        </div>
+        <div
+          class="bg-custom-secondary h-[100%] w-[48%] flex flex-row rounded-sm px-2 shadow-custom-option-dashboar"
+        >
+          <input
+            formControlName="coordenadas"
+            [placeholder]="
+              latitude() === 0 && longitude() === 0 ? 'Coordenadas X,Y' : ''
+            "
+            [value]="
+              latitude() === 0 && longitude() === 0
+                ? ''
+                : latitude() + ', ' + longitude()
+            "
+            type="text"
+            readonly
+            class="border-none outline-none bg-transparent font-maven-pro text-custom-primary text-base w-[95%] h-[100%]"
+          />
+        </div>
+      </section>
+      <section class="h-[15%] w-full flex flex-row gap-[1.5%]">
+        <button
+          (click)="OnChangedEstadoForm()"
+          [ngClass]="
+            estadoForm() ? 'rounded-full p-1 shadow-custom-option-dashboar' : ''
+          "
+          class="bg-custom-tertiary/25 rounded-full p-1 w-[5.6%] flex items-center justify-center"
+        >
+          <img
+            [src]="estadoForm() ? 'assets/view.svg' : 'assets/editar.svg'"
+            [alt]="estadoForm() ? 'Ver' : 'Editar'"
+            [title]="estadoForm() ? 'Modo visualización' : 'Modo edición'"
+            class="h-6 w-6 cursor-pointer"
+          />
+        </button>
+        <button
+          (click)="estadoForm() ? updateAlertaSocial() : createAlertaSocial()"
+          class="bg-custom-tertiary/25 rounded-full p-1 shadow-custom-option-dashboar w-[5.6%] flex items-center justify-center"
+        >
+          <img src="assets/guardarDatos.svg" alt="" class="h-6 w-6" />
+        </button>
+      </section>
+    </div>
+    <div
+      class="w-full h-[45%] border-2 border-custom-secondary border-custom-secondary/20 rounded-md py-[1%] px-[1.5%] gap-[3%] flex flex-col"
+    >
+      <div
+        #map
+        class="h-[100%] w-full rounded-md shadow-custom-option-dashboar"
+      ></div>
+    </div>
+  </section>
+
+  <section
+    class="h-full w-[45%] flex-col pl-[1.5%] flex items-center justify-between gap-[5%]"
+  >
+    <div
+      class="w-full h-[55%] border-2 border-custom-secondary border-custom-secondary/20 rounded-md py-[1%] px-[2%] gap-[3%] flex flex-col"
+    >
+      <p
+        class="font-maven-pro font-bold text-xl text-custom-secondary"
+        style="text-shadow: 1px 1px 4px #008005"
+      >
+        LISTA DE ALERTAS SOCIALES
+      </p>
+      <section
+        class="flex flex-row h-[14%] items-center justify-between gap-[3%]"
+      >
+        <div
+          class="bg-custom-secondary h-[100%] w-[45%] flex flex-row rounded-sm px-2 shadow-custom-option-dashboar"
+        >
+          <input
+            placeholder="Buscar por título"
+            type="text"
+            class="border-none outline-none bg-transparent font-maven-pro text-custom-primary text-base w-[95%] h-[100%]"
+          />
+        </div>
+        <div
+          class="bg-custom-secondary h-[100%] w-[30%] flex flex-row rounded-sm px-2 shadow-custom-option-dashboar"
+        >
+          <input
+            placeholder="Fecha"
+            type="text"
+            class="border-none outline-none bg-transparent font-maven-pro text-custom-primary text-base w-[95%] h-[100%]"
+          />
+        </div>
+        <div class="flex flex-row gap-6 w-[50%] justify-end">
+          <button
+            class="bg-custom-tertiary/25 rounded-full p-1 shadow-custom-option-dashboar"
+          >
+            <img src="assets/create.svg" alt="" class="h-6 w-6" />
+          </button>
+          <button
+            class="bg-custom-tertiary/25 rounded-full p-1 shadow-custom-option-dashboar"
+          >
+            <img src="assets/search.svg" alt="" class="h-6 w-6" />
+          </button>
+        </div>
+      </section>
+      <section class="h-[80%] w-full gap-1 overflow-y-auto custom-scrollbar">
+        @for(alerta of alertasSociales(); track alerta.id) {
+        <div
+          class="h-[22%] w-full flex flex-row items-center mb-1 text-custom-secondary hover:bg-gray-100 rounded-md p-2"
+        >
+          <div class="h-full w-[40%] flex items-center">
+            <p
+              class="text-xl font-maven-pro truncate overflow-hidden whitespace-nowrap"
+            >
+              {{ alerta.title }}
+            </p>
+          </div>
+          <div class="h-full w-[40%] flex items-center pl-4">
+            <p class="text-sm font-maven-pro text-gray-600">
+              {{ alerta.date | date : "medium" }}
+            </p>
+          </div>
+          <div
+            class="h-full w-[20%] flex flex-row justify-end items-center gap-4 pr-2"
+          >
+            <img
+              src="assets/editar.svg"
+              alt="Editar"
+              class="cursor-pointer object-contain h-5 w-5"
+              (click)="editarAlertaSocial(alerta)"
+            />
+            <img
+              src="assets/delete.svg"
+              alt="Eliminar"
+              class="cursor-pointer object-contain h-5 w-5"
+              (click)="eliminarAlertaSocial(alerta.id)"
+            />
+          </div>
+        </div>
+        @if(alerta.children && alerta.children.length > 0) { @for(child of
+        alerta.children; track child.id) {
+        <div
+          class="h-[22%] w-[95%] ml-[5%] flex flex-row items-center mb-1 text-custom-secondary hover:bg-gray-100 rounded-md p-2"
+        >
+          <div class="h-full w-[40%] flex items-center">
+            <p
+              class="text-lg font-maven-pro truncate overflow-hidden whitespace-nowrap"
+            >
+              ↳ {{ child.title }}
+            </p>
+          </div>
+          <div class="h-full w-[40%] flex items-center pl-4">
+            <p class="text-sm font-maven-pro text-gray-600">
+              {{ child.date | date : "medium" }}
+            </p>
+          </div>
+          <div
+            class="h-full w-[20%] flex flex-row justify-end items-center gap-4 pr-2"
+          >
+            <img
+              src="assets/editar.svg"
+              alt="Editar"
+              class="cursor-pointer object-contain h-5 w-5"
+              (click)="editarAlertaSocial(child)"
+            />
+            <img
+              src="assets/delete.svg"
+              alt="Eliminar"
+              class="cursor-pointer object-contain h-5 w-5"
+              (click)="eliminarAlertaSocial(child.id)"
+            />
+          </div>
+        </div>
+        } } }
+      </section>
+    </div>
+    <label
+      for="fileUpload"
+      class="w-full h-[45%] flex items-center gap-[5%] justify-center flex-col border-2 border-custom-secondary/20 rounded-md cursor-pointer relative overflow-hidden"
+    >
+      <img
+        [src]="imageEmpresa()"
+        alt=""
+        [class]="
+          estadoImagen()
+            ? 'absolute inset-0 w-full h-full object-contain'
+            : 'h-[50%] w-[30%] object-contain'
+        "
+      />
+      <p
+        *ngIf="!estadoImagen()"
+        class="font-bold font-maven-pro text-xl text-custom-secondary"
+        style="text-shadow: 1px 1px 4px #7b7e80"
+      >
+        Subir una imagen 1500x1000
+      </p>
+      <input
+        id="fileUpload"
+        type="file"
+        class="hidden"
+        (change)="seleccionarImagen($event)"
+        accept="image/*"
+      />
+    </label>
+  </section>
+</form>
