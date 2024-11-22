@@ -399,9 +399,24 @@ export default class PerfilComponent
   }
 
   selectAlert1(alert: string) {
-    this.selectedAlert1.set(alert);
-    this.emergenciaForm.patchValue({ nivelAlerta: alert });
-    this.isOpenInput1.set(false);
+    try {
+      // Actualizar el signal
+      this.selectedAlert1.set(alert);
+
+      // Actualizar el FormControl específico
+      this.emergenciaForm.get('nivelAlerta')?.setValue(alert);
+
+      // Cerrar el dropdown
+      this.isOpenInput1.set(false);
+
+      // Log detallado
+      console.log('Alerta seleccionada:', {
+        alerta: alert,
+        formValue: this.emergenciaForm.get('nivelAlerta')?.value,
+      });
+    } catch (error) {
+      console.error('Error al seleccionar alerta:', error);
+    }
   }
 
   toggleDropdown2() {
@@ -409,9 +424,24 @@ export default class PerfilComponent
   }
 
   selectEvent(evento: string) {
-    this.selectedEvent.set(evento);
-    this.emergenciaForm.patchValue({ tipoEvento: alert });
-    this.isOpenInput2.set(false);
+    try {
+      // Actualizar el signal
+      this.selectedEvent.set(evento);
+
+      // Actualizar el FormControl
+      this.emergenciaForm.get('tipoEvento')?.setValue(evento);
+
+      // Cerrar el dropdown
+      this.isOpenInput2.set(false);
+
+      // Log más detallado
+      console.log('Evento seleccionado:', {
+        evento: evento,
+        formValue: this.emergenciaForm.get('tipoEvento')?.value,
+      });
+    } catch (error) {
+      console.error('Error al seleccionar evento:', error);
+    }
   }
 
   getColorClass(alert: string): string {
